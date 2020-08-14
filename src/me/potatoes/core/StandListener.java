@@ -1,6 +1,7 @@
 package me.potatoes.core;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,15 +19,19 @@ public class StandListener implements Listener {
     public void potionItemPlacer(final InventoryClickEvent e) {
         if (e.getClickedInventory() != null &&
                 e.getClickedInventory().getType() == InventoryType.BREWING &&
-                e.getClick() == ClickType.LEFT) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.plugin, () -> {
-
-                final ItemStack currentItem = e.getCurrentItem();
-                final ItemStack heldItem = e.getCursor().clone();
-                e.setCursor(currentItem);
-                e.getClickedInventory().setItem(e.getSlot(), heldItem);
-                ((Player) e.getView().getPlayer()).updateInventory();
-            }, 1L);
+                e.getClick() == ClickType.LEFT &&
+                !(e instanceof BrewingStandInteractEvent) &&
+                e.getSlot() != 4) {
+            final ItemStack currentItem = e.getCurrentItem();
+            final ItemStack heldItem = e.getCursor().clone();
+            Bukkit.broadcastMessage(ChatColor.GREEN + "replacing " + currentItem.getType() + " with " + heldItem.getType());
+            e.setCancelled(true);
+            BrewingStandInteractEvent newEvent = new BrewingStandInteractEvent(e);
+            Bukkit.getServer().getPluginManager().callEvent(newEvent);
+            if(!newEvent.isCancelled()) {
+                newEvent.getView().getPlayer().setItemOnCursor(currentItem);
+                newEvent.getClickedInventory().setItem(e.getSlot(), heldItem);
+            }
         }
     }
 
