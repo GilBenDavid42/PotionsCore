@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -24,13 +25,14 @@ public class StandListener implements Listener {
                 e.getSlot() != 4) {
             final ItemStack currentItem = e.getCurrentItem();
             final ItemStack heldItem = e.getCursor().clone();
-            Bukkit.broadcastMessage(ChatColor.GREEN + "replacing " + currentItem.getType() + " with " + heldItem.getType());
+            //Bukkit.broadcastMessage(ChatColor.GREEN + "replacing " + currentItem.getType() + " with " + heldItem.getType());
             e.setCancelled(true);
             BrewingStandInteractEvent newEvent = new BrewingStandInteractEvent(e);
             Bukkit.getServer().getPluginManager().callEvent(newEvent);
             if(!newEvent.isCancelled()) {
                 newEvent.getView().getPlayer().setItemOnCursor(currentItem);
                 newEvent.getClickedInventory().setItem(e.getSlot(), heldItem);
+                BrewingRecipe.isRecipe((BrewerInventory) e.getInventory());
             }
         }
     }

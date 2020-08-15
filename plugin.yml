@@ -1,3 +1,4 @@
 name: PotionsCore
 version: 1.0.0
 main: me.potatoes.core.Core
+api-version: 1.16
