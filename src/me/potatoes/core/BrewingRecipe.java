@@ -1,11 +1,7 @@
 package me.potatoes.core;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BrewingStand;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -21,8 +17,7 @@ public class BrewingRecipe {
     private boolean useMetaData;
     private int brewingTime;
 
-    public BrewingRecipe(ItemStack ingredient, ItemStack toModify, ItemStack toMake, boolean useMetadata, int brewingTime)
-    {
+    public BrewingRecipe(ItemStack ingredient, ItemStack toModify, ItemStack toMake, boolean useMetadata, int brewingTime) {
         this.ingredient = ingredient;
         this.toModify = toModify;
         this.toMake = toMake;
@@ -30,8 +25,26 @@ public class BrewingRecipe {
         this.brewingTime = brewingTime;
     }
 
-    public static void addRecipe(BrewingRecipe recipe)
-    {
+    public static boolean isRecipeApplicable(BrewerInventory inv, BrewingRecipe recipe) {
+        if (inv.getIngredient() != null && inv.getIngredient().getType() == recipe.getIngredient().getType()) {
+            boolean hasItems = false;
+            boolean allAcceptable = true;
+            boolean hasFuel = inv.getHolder().getFuelLevel() > 0;
+            for (int i = 0; i < 3; i++) {
+                if (inv.getItem(i) != null && inv.getItem(i).getType() == recipe.getToModify().getType()) {
+                    hasItems = (!recipe.isUseMetaData() || inv.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta());
+                } else if (inv.getItem(i) != null && inv.getItem(i).getType() != Material.AIR) {
+                    allAcceptable = false;
+                }
+            }
+
+            return allAcceptable && hasItems && hasFuel;
+        }
+        return false;
+    }
+
+
+    public static void addRecipe(BrewingRecipe recipe) {
         recipes.add(recipe);
     }
 
@@ -75,28 +88,11 @@ public class BrewingRecipe {
         this.useMetaData = useMetaData;
     }
 
-    public static BrewingRecipe isRecipe(BrewerInventory inv)
-    {
-        for(BrewingRecipe recipe : BrewingRecipe.recipes)
-        {
-            if(inv.getIngredient() != null && inv.getIngredient().getType() == recipe.getIngredient().getType())
-            {
-                boolean hasItems = false;
-                boolean allAcceptable = true;
-                for(int i = 0; i < 3; i++)
-                {
-                    if(inv.getItem(i).getType() == recipe.getToModify().getType())
-                    {
-                        hasItems = ((recipe.isUseMetaData() && inv.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta()) || !recipe.isUseMetaData() );
-                    }else if(inv.getItem(i).getType() != Material.AIR){
-                        allAcceptable = false;
-                    }
-                }
-                if(allAcceptable && hasItems)
-                {
-                    new BrewRunnable(inv, recipe);
-                    return recipe;
-                }
+    public static BrewingRecipe isRecipe(BrewerInventory inv) {
+        for (BrewingRecipe recipe : BrewingRecipe.recipes) {
+            if (isRecipeApplicable(inv, recipe)) {
+                new BrewRunnable(inv, recipe);
+                return recipe;
             }
         }
         return null;
@@ -105,8 +101,7 @@ public class BrewingRecipe {
 
 }
 
-class BrewRunnable extends BukkitRunnable
-{
+class BrewRunnable extends BukkitRunnable {
     private BrewerInventory inventory;
     private BrewingRecipe recipe;
     private BrewingStand stand;
@@ -125,43 +120,24 @@ class BrewRunnable extends BukkitRunnable
 
     @Override
     public void run() {
-        if (time==0)
-        {
+        if (time == 0) {
+            stand.setFuelLevel(stand.getFuelLevel() - 1);
             inventory.setIngredient(new ItemStack(Material.AIR));
-            for(int i = 0; i < 3 ; i++)
-            {
-                if((recipe.isUseMetaData() && inventory.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta())
-                        || ((!recipe.isUseMetaData()) && recipe.getToModify().getType() == inventory.getItem(i).getType()) )
-                {
+            for (int i = 0; i < 3; i++) {
+                if (inventory.getItem(i) != null && ((recipe.isUseMetaData() && inventory.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta())
+                        || ((!recipe.isUseMetaData()) && recipe.getToModify().getType() == inventory.getItem(i).getType()))) {
                     inventory.setItem(i, recipe.getToMake());
                 }
             }
             cancel();
-        }else if(!((recipe.isUseMetaData() && inventory.getIngredient().getItemMeta() == recipe.getIngredient().getItemMeta())
-                || ((!recipe.isUseMetaData()) && recipe.getIngredient().getType() == inventory.getIngredient().getType())))
-        {
-            stand.setBrewingTime(400); //Reseting everything
+        } else if (!BrewingRecipe.isRecipeApplicable(inventory, recipe)) {
+            stand.setBrewingTime(400); //Resetting everything
             cancel();
-        }else
-        {
-            boolean hasItems = false;
-            boolean allAcceptable = true;
-            for(int i = 0; i < 3; i++)
-            {
-                if(inventory.getItem(i).getType() == recipe.getToModify().getType())
-                {
-                    hasItems = ((recipe.isUseMetaData() && inventory.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta()) || !recipe.isUseMetaData() );
-                }else if(inventory.getItem(i).getType() != Material.AIR){
-                    allAcceptable = false;
-                }
-            }
-            if(allAcceptable && hasItems)
-            {
-                time--;
-                int standProgress = (int)((float)time / startTime * 400);
-                stand.setBrewingTime(standProgress);
-                stand.update();
-            }
+        } else {
+            time--;
+            int standProgress = (int) ((float) time / startTime * 400);
+            stand.setBrewingTime(standProgress);
+            stand.update();
         }
     }
 }

@@ -1,9 +1,7 @@
 package me.potatoes.core;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -25,16 +23,23 @@ public class StandListener implements Listener {
                 e.getSlot() != 4) {
             final ItemStack currentItem = e.getCurrentItem();
             final ItemStack heldItem = e.getCursor().clone();
-            //Bukkit.broadcastMessage(ChatColor.GREEN + "replacing " + currentItem.getType() + " with " + heldItem.getType());
             e.setCancelled(true);
             BrewingStandInteractEvent newEvent = new BrewingStandInteractEvent(e);
             Bukkit.getServer().getPluginManager().callEvent(newEvent);
-            if(!newEvent.isCancelled()) {
-                newEvent.getView().getPlayer().setItemOnCursor(currentItem);
-                newEvent.getClickedInventory().setItem(e.getSlot(), heldItem);
+            if (!newEvent.isCancelled()) {
+                if (heldItem.getAmount() == 1 || heldItem == null || heldItem.getType() == Material.AIR || newEvent.getSlot() == 3) {
+                    newEvent.getView().getPlayer().setItemOnCursor(currentItem);
+                    newEvent.getClickedInventory().setItem(newEvent.getSlot(), heldItem);
+                } else if (currentItem == null || currentItem.getType() == Material.AIR) {
+                    ItemStack newSlot = heldItem.clone();
+                    newSlot.setAmount(1);
+                    newEvent.getClickedInventory().setItem(newEvent.getSlot(), newSlot);
+                    heldItem.setAmount(heldItem.getAmount() - 1);
+                    newEvent.getView().getPlayer().setItemOnCursor(heldItem);
+                }
+
                 BrewingRecipe.isRecipe((BrewerInventory) e.getInventory());
             }
         }
     }
-
 }
