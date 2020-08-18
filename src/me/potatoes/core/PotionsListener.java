@@ -23,66 +23,49 @@ public class PotionsListener implements Listener {
     public void onConsume(PlayerItemConsumeEvent e) {
         if (e.getItem().getType() == Material.POTION) {
             ItemStack potion = e.getItem();
-            NamespacedKey key = new NamespacedKey(Core.plugin, "CustomPotions");
             ItemMeta itemMeta = potion.getItemMeta();
             PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-            StringArrayItemTagType stringArrayType = new StringArrayItemTagType(Charset.forName("utf-16"));
 
             String[] potionData = null;
-            if (container.has(key, stringArrayType)) {
-                potionData = container.get(key, stringArrayType);
+            if (container.has(Core.key, Core.stringArrayItemTagType)) {
+                potionData = container.get(Core.key, Core.stringArrayItemTagType);
             }
 
-        CustomPotion.applyEffects(potionData, e.getPlayer());
+            CustomPotion.applyEffects(potionData, e.getPlayer());
         }
     }
 
     @EventHandler
-    public void onPotionThrow(ProjectileLaunchEvent e)
-    {
-        if(e.getEntity().getType() == EntityType.SPLASH_POTION)
-        {
+    public void onPotionThrow(ProjectileLaunchEvent e) {
+        if (e.getEntity().getType() == EntityType.SPLASH_POTION) {
             ThrownPotion potion = (ThrownPotion) e.getEntity();
-            if(e.getEntity().getShooter() instanceof Player)
-            {
-                NamespacedKey key = new NamespacedKey(Core.plugin, "CustomPotions");
-                Player player = (Player)e.getEntity().getShooter();
+            if (e.getEntity().getShooter() instanceof Player) {
+                Player player = (Player) e.getEntity().getShooter();
                 ItemStack potionItem = player.getInventory().getItemInMainHand();
                 PersistentDataContainer oldData = potionItem.getItemMeta().getPersistentDataContainer();
-                StringArrayItemTagType stringArrayType = new StringArrayItemTagType(Charset.forName("utf-16"));
                 String[] potionData = null;
 
-                if (oldData.has(key, stringArrayType)) {
-                    potionData = oldData.get(key, stringArrayType);
+                if (oldData.has(Core.key, Core.stringArrayItemTagType)) {
+                    potionData = oldData.get(Core.key, Core.stringArrayItemTagType);
                 }
-                if(potionData != null)
-                {
-                    e.getEntity().getPersistentDataContainer().set(key, stringArrayType, potionData);
+                if (potionData != null) {
+                    e.getEntity().getPersistentDataContainer().set(Core.key, Core.stringArrayItemTagType, potionData);
                 }
             }
         }
     }
 
-    @EventHandler
-    public void onPotionDispense(BlockDispenseEvent e)
-    {
-    }
-
 
     @EventHandler
-    public void onPotionSplash(PotionSplashEvent e)
-    {
-        NamespacedKey key = new NamespacedKey(Core.plugin, "CustomPotions");
+    public void onPotionSplash(PotionSplashEvent e) {
         PersistentDataContainer data = e.getEntity().getPersistentDataContainer();
         String[] potionData = null;
-        StringArrayItemTagType stringArrayType = new StringArrayItemTagType(Charset.forName("utf-16"));
 
-        if (data.has(key, stringArrayType)) {
-            potionData = data.get(key, stringArrayType);
+        if (data.has(Core.key, Core.stringArrayItemTagType)) {
+            potionData = data.get(Core.key, Core.stringArrayItemTagType);
         }
 
-        for(Entity entity : e.getAffectedEntities())
-        {
+        for (Entity entity : e.getAffectedEntities()) {
             CustomPotion.applyEffects(potionData, entity);
         }
     }

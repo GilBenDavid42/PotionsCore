@@ -1,5 +1,6 @@
 package me.potatoes.core;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -7,12 +8,18 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.nio.charset.Charset;
+
 public class Core extends JavaPlugin {
 
     public static Core plugin;
+    public static NamespacedKey key;
+    public static StringArrayItemTagType stringArrayItemTagType = new StringArrayItemTagType(Charset.forName("utf-16"));
 
     public Core() {
+
         this.plugin = this;
+        this.key = new NamespacedKey(this, "CustomPotions");
     }
 
 

@@ -122,7 +122,8 @@ class BrewRunnable extends BukkitRunnable {
     public void run() {
         if (time == 0) {
             stand.setFuelLevel(stand.getFuelLevel() - 1);
-            inventory.setIngredient(new ItemStack(Material.AIR));
+            stand.update();
+            inventory.getIngredient().setAmount(inventory.getIngredient().getAmount() -1);
             for (int i = 0; i < 3; i++) {
                 if (inventory.getItem(i) != null && ((recipe.isUseMetaData() && inventory.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta())
                         || ((!recipe.isUseMetaData()) && recipe.getToModify().getType() == inventory.getItem(i).getType()))) {

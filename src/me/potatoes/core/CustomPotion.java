@@ -42,8 +42,7 @@ public class CustomPotion {
     }
 
     public static void applyEffects(String[] effects, Entity entity) {
-        if(effects != null)
-        {
+        if (effects != null) {
             for (String effectName : effects) {
                 effectMap.get(effectName).affect(entity);
             }
@@ -53,11 +52,10 @@ public class CustomPotion {
     public ItemStack getPotion(boolean isSplash) {
         ItemStack newPotion = new ItemStack(isSplash ? Material.SPLASH_POTION : Material.POTION);
         ItemMeta potionMeta = newPotion.getItemMeta();
-        NamespacedKey key = new NamespacedKey(Core.plugin, "CustomPotions");
 
         String[] potionData = effects.toArray(new String[effects.size()]);
 
-        potionMeta.getPersistentDataContainer().set(key, new StringArrayItemTagType(Charset.forName("utf-16")), potionData);
+        potionMeta.getPersistentDataContainer().set(Core.key, Core.stringArrayItemTagType, potionData);
         newPotion.setItemMeta(potionMeta);
 
         return newPotion;
