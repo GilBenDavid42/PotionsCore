@@ -20,14 +20,13 @@ public class CustomPotion {
     private static Map<String, CustomEffect> effectMap = new HashMap<>();
     private Set<String> effects;
 
-    public CustomPotion(boolean isSplash) {
-        this.isSplash = isSplash;
+    public CustomPotion() {
         effects = new HashSet<>();
     }
 
 
     public static boolean registerEffect(String effectName, CustomEffect customEffect) {
-        boolean result = effectMap.containsKey(effectName);
+        boolean result = !effectMap.containsKey(effectName);
         if (result) {
             effectMap.put(effectName, customEffect);
         }
@@ -43,22 +42,23 @@ public class CustomPotion {
     }
 
     public static void applyEffects(String[] effects, Entity entity) {
-        for (String effectName : effects) {
-            effectMap.get(effectName).affect(entity);
+        if(effects != null)
+        {
+            for (String effectName : effects) {
+                effectMap.get(effectName).affect(entity);
+            }
         }
     }
 
-    public ItemStack getPotion() {
-        ItemStack newPotion = new ItemStack(Material.POTION);
+    public ItemStack getPotion(boolean isSplash) {
+        ItemStack newPotion = new ItemStack(isSplash ? Material.SPLASH_POTION : Material.POTION);
         ItemMeta potionMeta = newPotion.getItemMeta();
-
         NamespacedKey key = new NamespacedKey(Core.plugin, "CustomPotions");
-        ItemMeta itemMeta = newPotion.getItemMeta();
 
         String[] potionData = effects.toArray(new String[effects.size()]);
 
         potionMeta.getPersistentDataContainer().set(key, new StringArrayItemTagType(Charset.forName("utf-16")), potionData);
-        newPotion.setItemMeta(itemMeta);
+        newPotion.setItemMeta(potionMeta);
 
         return newPotion;
     }
