@@ -32,7 +32,7 @@ public class BrewingRecipe {
             boolean hasFuel = inv.getHolder().getFuelLevel() > 0;
             for (int i = 0; i < 3; i++) {
                 if (inv.getItem(i) != null && inv.getItem(i).getType() == recipe.getToModify().getType()) {
-                    hasItems = (!recipe.isUseMetaData() || inv.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta());
+                    hasItems = (!recipe.isUseMetaData() || recipe.getToModify().isSimilar(inv.getItem(i)));
                 } else if (inv.getItem(i) != null && inv.getItem(i).getType() != Material.AIR) {
                     allAcceptable = false;
                 }
@@ -125,7 +125,7 @@ class BrewRunnable extends BukkitRunnable {
             stand.update();
             inventory.getIngredient().setAmount(inventory.getIngredient().getAmount() -1);
             for (int i = 0; i < 3; i++) {
-                if (inventory.getItem(i) != null && ((recipe.isUseMetaData() && inventory.getItem(i).getItemMeta() == recipe.getToModify().getItemMeta())
+                if (inventory.getItem(i) != null && ((recipe.isUseMetaData() && recipe.getToModify().isSimilar(inventory.getItem(i)))
                         || ((!recipe.isUseMetaData()) && recipe.getToModify().getType() == inventory.getItem(i).getType()))) {
                     inventory.setItem(i, recipe.getToMake());
                 }
@@ -137,7 +137,7 @@ class BrewRunnable extends BukkitRunnable {
         } else {
             time--;
             int standProgress = (int) ((float) time / startTime * 400);
-            stand.setBrewingTime(standProgress);
+            stand.setBrewingTime(standProgress > 2? standProgress : 2);
             stand.update();
         }
     }
